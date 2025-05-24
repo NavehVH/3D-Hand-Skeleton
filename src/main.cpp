@@ -82,7 +82,7 @@ int main(int argc, char **argv)
     gluLookAt(0, 0, 1.5, 0, 0, 0, 0, 1, 0);
 
     glutDisplayFunc(display);
-    glutTimerFunc(0, timer, 0);  // 🔥 Starts the animation update loop
+    glutTimerFunc(0, timer, 0);  // Starts the animation update loop
     glutMainLoop();
 
     return 0;

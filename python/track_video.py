@@ -15,7 +15,7 @@ hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1)
 cap = cv2.VideoCapture(VIDEO_PATH)
 
 if not cap.isOpened():
-    print("❌ Failed to open video.")
+    print("Failed to open video.")
     exit(1)
 
 frame_count = 0
