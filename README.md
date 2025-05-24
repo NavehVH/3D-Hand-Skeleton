@@ -64,7 +64,7 @@ This project supports:
 
 ---
 
-## 🔧 Requirements
+## Requirements
 
 ### System Packages (Ubuntu/WSL)
 Install C++ + OpenGL + MediaPipe prerequisites:
@@ -87,9 +87,9 @@ pip3 install mediapipe opencv-python
 
 ---
 
-## ▶How to Run
+## How to Run
 
-### 🔁 Terminal Mode (No GUI)
+### Terminal Mode (No GUI)
 1. Put your `.mp4` video in `assets/hand_video.mp4`
 2. In one terminal:
     ```bash
