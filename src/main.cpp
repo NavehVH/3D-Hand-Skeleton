@@ -45,7 +45,7 @@ void display()
         glVertex3f(p.x - 0.5f, 0.5f - p.y, -p.z); // adjust Y flip
     }
     glEnd();
-    
+
     // Draw bones
     glBegin(GL_LINES);
     glColor3f(1.0f, 1.0f, 1.0f); // white lines
@@ -62,16 +62,18 @@ void display()
     glutSwapBuffers(); // if using double buffer
 }
 
+void timer(int) {
+    hand_points = load_hand_landmarks("assets/current.json");
+    glutPostRedisplay();                     // Trigger redraw
+    glutTimerFunc(33, timer, 0);             // Schedule next update (~30 FPS)
+}
+
 int main(int argc, char **argv)
 {
-    hand_points = load_hand_landmarks("assets/hand_landmarks.json");
-    for (const auto &p : hand_points)
-    {
-        printf("x: %.3f y: %.3f z: %.3f\n", p.x, p.y, p.z);
-    }
+    hand_points = load_hand_landmarks("assets/current.json"); // Load initial
 
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);         // Double buffer!
     glutInitWindowSize(800, 600);
     glutCreateWindow("3D Hand Skeleton");
 
@@ -80,6 +82,9 @@ int main(int argc, char **argv)
     gluLookAt(0, 0, 1.5, 0, 0, 0, 0, 1, 0);
 
     glutDisplayFunc(display);
+    glutTimerFunc(0, timer, 0);  // 🔥 Starts the animation update loop
     glutMainLoop();
+
     return 0;
 }
+
