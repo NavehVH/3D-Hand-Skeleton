@@ -17,7 +17,7 @@ for f in [PAUSE_FLAG, DONE_FLAG]:
 
 # Setup MediaPipe Hands
 mp_hands = mp.solutions.hands
-hands = mp_hands.Hands(static_image_mode=False, max_num_hands=1) # enable video stream mode and process only 1 hand
+hands = mp_hands.Hands(static_image_mode=False, max_num_hands=2) # enable video stream mode and process only 1 hand
 
 # Open video file using opencv
 cap = cv2.VideoCapture(VIDEO_PATH)
@@ -56,17 +56,19 @@ while True: # frame by frame loop
 
     # Save landmarks if detected, builds a list of 21 landmark dictionaries
     if results.multi_hand_landmarks:
-        hand_landmarks = results.multi_hand_landmarks[0]
-        points = [{"id": i, "x": lm.x, "y": lm.y, "z": lm.z} for i, lm in enumerate(hand_landmarks.landmark)]
+        all_hands = []
+        for hand_landmarks in results.multi_hand_landmarks:
+            hand_points = [{"id": i, "x": lm.x, "y": lm.y, "z": lm.z}
+                           for i, lm in enumerate(hand_landmarks.landmark)]
+            all_hands.append(hand_points)
 
-        # Safe atomic JSON overwrite (This avoids file corruption if the C++ side tries to read it during a write.)
-        temp_path = OUTPUT_JSON + ".tmp" # create tmp file with the data and replace it with JSON when finished
+        temp_path = OUTPUT_JSON + ".tmp"
         with open(temp_path, "w") as f:
-            json.dump(points, f)
-        os.replace(temp_path, OUTPUT_JSON) # Atomically move temp → target
+            json.dump(all_hands, f)
+        os.replace(temp_path, OUTPUT_JSON)
 
     frame_count += 1
-    time.sleep(1/30)  # ~30 FPS (Gives MediaPipe and the viewer time to catch up.)
+    time.sleep(1/30)
 
 # Cleanup (video ended)
 cap.release()

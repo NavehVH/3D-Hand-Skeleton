@@ -9,6 +9,6 @@ struct Landmark {
     float x, y, z;
 };
 
-std::vector<Landmark> load_hand_landmarks(const char* filename);
+std::vector<std::vector<Landmark>> load_hand_landmarks(const char* filename);
 
 #endif
