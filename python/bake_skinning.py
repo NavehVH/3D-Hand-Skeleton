@@ -1,9 +1,20 @@
+"""
+bake_skinning.py
+
+Preprocessing script to convert heavy pickle (.pkl) MANO models 
+into optimized JSON formats for the C++ engine.
+
+Key Logic:
+1. Rigid Binding: Assigns every vertex to the nearest bone.
+2. Vector Calculation: Computes 'rest vectors' and 'perpendicular offsets'
+   to allow linear stretching in the C++ renderer.
+"""
+
 import pickle
 import json
 import numpy as np
 import os
 
-# הגדרת זוגות קבצים (קלט -> פלט)
 TASKS = [
     ("assets/MANO_RIGHT.pkl", "assets/mano_right.json"),
     ("assets/MANO_LEFT.pkl", "assets/mano_left.json")
@@ -16,21 +27,22 @@ def normalize(v):
 
 def bake_model(input_path, output_path):
     if not os.path.exists(input_path):
-        print(f"Skipping {input_path} (File not found)")
+        print(f"[Skip] {input_path} not found.")
         return
 
-    print(f"Processing {input_path}...")
+    print(f"[Processing] {input_path}...")
     with open(input_path, 'rb') as f:
         data = pickle.load(f, encoding='latin1')
 
     vertices = data['v_template']
     faces = data['f']
-    # J_regressor מחשב את המפרקים. זה עובד זהה לשמאל ולימין.
-    J_regressor = data['J_regressor']
-    mano_joints = J_regressor.dot(vertices)
-    mj = mano_joints
     
-    # מיפוי זהה לשתי הידיים (המבנה הטופולוגי זהה)
+    # Use J_regressor to find joint positions from vertices
+    J_regressor = data['J_regressor']
+    mj = J_regressor.dot(vertices)
+    
+    # Map MANO joints to our skeletal structure (Parent -> Child)
+    # This map defines the "Rest Pose" vectors.
     bones_map = {
         0: (mj[0], mj[1]),   # Wrist
         1: (mj[13], mj[14]), 2: (mj[14], mj[15]), 3: (mj[15], mj[15] + (mj[15]-mj[14])), # Thumb
@@ -40,6 +52,7 @@ def bake_model(input_path, output_path):
         17: (mj[7], mj[8]), 18: (mj[8], mj[9]), 19: (mj[9], mj[9] + (mj[9]-mj[8]))     # Pinky
     }
 
+    # Calculate Normals for smooth shading
     vertex_normals = np.zeros(vertices.shape)
     for f in faces:
         v0, v1, v2 = vertices[f[0]], vertices[f[1]], vertices[f[2]]
@@ -52,7 +65,9 @@ def bake_model(input_path, output_path):
 
     skinned_vertices = []
     
+    # Calculate skinning weights for every vertex
     for i, v in enumerate(vertices):
+        # 1. Find nearest bone (Rigid Binding)
         best_id = 0
         min_dist = float('inf')
         for bid, (parent_pos, _) in bones_map.items():
@@ -62,13 +77,16 @@ def bake_model(input_path, output_path):
                 best_id = bid
         
         parent_pos, child_pos = bones_map[best_id]
+        
+        # 2. Calculate Rest Vector components
         rest_bone_vec = child_pos - parent_pos
         rest_bone_len = np.linalg.norm(rest_bone_vec)
         rest_bone_dir = normalize(rest_bone_vec)
         
+        # 3. Project vertex onto bone vector to get Proj/Perp components
         offset = v - parent_pos
-        proj_dist = np.dot(offset, rest_bone_dir)
-        perp_vec = offset - proj_dist * rest_bone_dir
+        proj_dist = np.dot(offset, rest_bone_dir) # Distance along bone
+        perp_vec = offset - proj_dist * rest_bone_dir # Thickness/Volume
         normal = vertex_normals[i]
 
         skinned_vertices.append({
@@ -83,7 +101,7 @@ def bake_model(input_path, output_path):
     output_data = {"faces": faces.tolist(), "vertices": skinned_vertices}
     with open(output_path, 'w') as f:
         json.dump(output_data, f)
-    print(f"Saved to {output_path}")
+    print(f"[Success] Saved to {output_path}")
 
 if __name__ == "__main__":
     for inp, outp in TASKS:
