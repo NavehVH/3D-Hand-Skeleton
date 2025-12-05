@@ -1,0 +1,4 @@
+echo "build/" > .gitignore
+echo "*.flag" >> .gitignore
+echo "*.tmp" >> .gitignore
+echo "__pycache__/" >> .gitignore
