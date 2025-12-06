@@ -1,23 +1,28 @@
-# 3D Hand Tracking & MANO Visualization 🖐️
+# 3D Hand Tracking & MANO Visualization
 
 **Mini-Project: Image Processing Course**
 
-A high-performance, cross-language project that combines **MediaPipe (Python)** for AI tracking and **OpenGL (C++)** for real-time anatomical rendering. This system detects hand landmarks from video and maps them onto a realistic **MANO mesh** with dynamic skinning and bone stretching.
+A high-performance, cross-language project that combines **MediaPipe AI (Python)** for tracking and **OpenGL (C++)** for real-time anatomical rendering. This system detects hand landmarks from video and maps them onto a realistic **MANO mesh** with dynamic skinning and bone stretching.
 
 This project supports:
 - **Dual Hands:** Simultaneous detection and rendering of Left and Right hands.
 - **MANO Mesh:** Anatomically correct mesh visualization (via SMPL/MANO models).
-- **Hybrid Architecture:** Python for AI processing ↔ C++ for 3D graphics.
+- **Hybrid Architecture:** Python for processing ↔ C++ for 3D graphics.
 
 ---
 
-## 📸 Preview
- 
-*Replace `demo_screenshot.jpg` with an actual screenshot of your white mesh hand.*
+## Preview
+ ![output example](./assets/me1.jpg)
+ ![output example](./assets/me2.jpg)
+ ![output example](./assets/output.jpg)
+
+ UI:
+
+ ![UI](./assets/ui.jpg)
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 - **Real-Time Tracking:** Uses MediaPipe to extract 21 skeletal keypoints per hand.  
 - **Anatomical Rendering:** Renders the MANO mesh (vertices & faces) instead of stick figures.  
@@ -28,7 +33,7 @@ This project supports:
 
 ---
 
-## 📂 Folder Structure
+## Folder Structure
 
 ```text
 3D-Hand-Skeleton/
@@ -61,7 +66,7 @@ This project supports:
 
 ---
 
-## 🛠️ Prerequisites & Installation
+## Prerequisites & Installation
 
 ### 1. System Packages (Ubuntu / WSL)
 
@@ -101,7 +106,7 @@ make
 
 ---
 
-## 🎮 How to Run
+## How to Run
 
 ### Method A: GUI Launcher (Recommended)
 
@@ -134,7 +139,7 @@ python3 python/track_video.py
 
 ---
 
-## 🧠 How It Works Internally
+## How It Works Internally
 
 1. **Detection (Python):**  
    - Python captures a frame, converts BGR → RGB, and feeds it to MediaPipe.  
@@ -155,7 +160,7 @@ python3 python/track_video.py
 
 ---
 
-## 📚 Technologies Used
+## Technologies Used
 
 - **MediaPipe** – AI Hand Tracking  
 - **OpenGL / GLUT** – 3D Graphics Rendering  
