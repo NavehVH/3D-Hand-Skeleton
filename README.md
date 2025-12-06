@@ -12,8 +12,7 @@ This project supports:
 ---
 
 ## 📸 Preview
-
-![3D Hand Demo](assets/demo_screenshot.jpg)  
+ 
 *Replace `demo_screenshot.jpg` with an actual screenshot of your white mesh hand.*
 
 ---
