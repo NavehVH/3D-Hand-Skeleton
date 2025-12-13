@@ -63,7 +63,7 @@ def check_children():
     if (tracker_proc and tracker_proc.poll() is not None) or \
        (viewer_proc and viewer_proc.poll() is not None):
         stop_both()
-        status_label.config(text="Process exited unexpectedly.", fg="red")
+        status_label.config(text="Finished process.", fg="red")
     else:
         root.after(500, check_children)
 

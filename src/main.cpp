@@ -7,6 +7,7 @@
  * 2. Linear bone stretching to match user anatomy.
  * 3. Procedural coloring (Heatmap).
  * 4. Articulated joint smoothing (Spheres).
+ * 5. Dynamic Timer: Runs at the original video's FPS.
  */
 
 #include <GL/glut.h>
@@ -16,6 +17,8 @@
 #include <iostream>
 #include <cmath>
 #include <map>
+#include <fstream> // <-- NEW IMPORT
+#include <string>  // <-- NEW IMPORT
 
 // -- Global State (Required for GLUT callbacks) --
 std::vector<DetectedHand> detected_hands;
@@ -23,6 +26,9 @@ SkinnedMesh mesh_right;
 SkinnedMesh mesh_left;
 bool right_loaded = false;
 bool left_loaded = false;
+
+// --- DYNAMIC FPS VARIABLE ---
+int timer_delay_ms = 33; // Default to 30 FPS (33ms)
 
 // Skeletal connections for debug overlay (Pairs of Landmark indices)
 const int connections[][2] = {
@@ -238,6 +244,30 @@ void draw_hand_mesh(const SkinnedMesh& mesh, const std::vector<Landmark>& points
     }
 }
 
+// --- NEW HELPER FUNCTION ---
+/**
+ * @brief Reads the calculated timer delay from the Python tracker.
+ * Ensures the C++ viewer runs at the original video's FPS.
+ */
+void load_timer_delay() {
+    std::ifstream speed_file("assets/speed.txt");
+    if (speed_file.is_open()) {
+        std::string line;
+        if (std::getline(speed_file, line)) {
+            try {
+                int delay = std::stoi(line);
+                // The minimum delay is typically 1ms
+                if (delay > 0) { 
+                    timer_delay_ms = delay;
+                }
+            } catch (...) {
+                // Ignore conversion errors and stick to default 33ms
+            }
+        }
+    }
+}
+
+
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW); 
@@ -272,7 +302,8 @@ void timer(int) {
     if (std::filesystem::exists("assets/done.flag")) std::exit(0);
     
     glutPostRedisplay(); 
-    glutTimerFunc(33, timer, 0); // ~30 FPS loop
+    // --- UPDATED: Use the dynamic delay value ---
+    glutTimerFunc(timer_delay_ms, timer, 0); 
 }
 
 int main(int argc, char **argv) {
@@ -286,6 +317,9 @@ int main(int argc, char **argv) {
 
     mesh_left = load_skinned_mesh("assets/mano_left.json");
     if (!mesh_left.vertices.empty()) left_loaded = true;
+
+    // --- NEW: Load the video FPS delay BEFORE starting the timer ---
+    load_timer_delay(); 
 
     // Initialize GLUT
     glutInit(&argc, argv);
