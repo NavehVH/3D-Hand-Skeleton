@@ -17,17 +17,17 @@
 #include <iostream>
 #include <cmath>
 #include <map>
-#include <fstream> // <-- NEW IMPORT
-#include <string>  // <-- NEW IMPORT
+#include <fstream> 
+#include <string> 
 
-// -- Global State (Required for GLUT callbacks) --
+// Global State (Required for GLUT callbacks)
 std::vector<DetectedHand> detected_hands;
 SkinnedMesh mesh_right;
 SkinnedMesh mesh_left;
 bool right_loaded = false;
 bool left_loaded = false;
 
-// --- DYNAMIC FPS VARIABLE ---
+// DYNAMIC FPS VARIABLE
 int timer_delay_ms = 33; // Default to 30 FPS (33ms)
 
 // Skeletal connections for debug overlay (Pairs of Landmark indices)
@@ -53,15 +53,18 @@ std::map<int, int> bone_map = {
 // -- Vector Math Utilities --
 struct Vec3 { float x, y, z; };
 
+//Getting Pure Direction
 Vec3 normalize(Vec3 v) {
     float l = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
     return (l==0) ? Vec3{0,0,0} : Vec3{v.x/l, v.y/l, v.z/l};
 }
 
+//cross product takes two vectors and returns a third vector that is mathematically perpendicular to both of them
 Vec3 cross(Vec3 a, Vec3 b) { 
     return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x}; 
 }
 
+//the angle theta between the two vectors
 float dot(Vec3 a, Vec3 b) { 
     return a.x*b.x + a.y*b.y + a.z*b.z; 
 }
@@ -96,6 +99,7 @@ void apply_rotation(float &x, float &y, float &z, Vec3 rest_dir, Vec3 curr_dir) 
     z = v.z * c + cross_uv.z * s + u.z * dot_uv * (1-c);
 }
 
+//make the rendered 3D hand mesh look realistic
 void initLighting() {
     glEnable(GL_LIGHTING); 
     glEnable(GL_LIGHT0);
@@ -116,7 +120,6 @@ void initLighting() {
 
 /**
  * @brief Renders the debug skeleton overlay (Lines and Points).
- * Disabled depth testing to render "on top" (X-Ray view).
  */
 void draw_skeleton(const std::vector<Landmark>& points) {
     glDisable(GL_LIGHTING);
@@ -156,9 +159,8 @@ void draw_hand_mesh(const SkinnedMesh& mesh, const std::vector<Landmark>& points
     // 1. Calculate current bone vectors and lengths from live tracking
     std::map<int, Vec3> curr_vecs;
     std::map<int, float> curr_lengths;
-
+    //21 points to 18 core bone properties
     for (auto const& [p, child] : bone_map) {
-        // [FIXED] Added (size_t) casts to silence signed/unsigned comparison warnings
         if ((size_t)p < points.size() && (size_t)child < points.size()) {
             float dx = points[child].x - points[p].x;
             float dy = points[child].y - points[p].y;
@@ -176,11 +178,10 @@ void draw_hand_mesh(const SkinnedMesh& mesh, const std::vector<Landmark>& points
         
         for (int i : idx) {
             const auto& v = mesh.vertices[i];
-            
-            // [FIXED] Added (size_t) cast to silence signed/unsigned comparison warning
+
             if ((size_t)v.bone_id >= points.size()) continue;
 
-            // -- Style: Procedural Gradient (Heatmap) --
+            // Procedural Gradient
             // Wrist (0) is white/cool, Fingertips are warm.
             if (v.bone_id == 0) {
                 glColor3f(0.9f, 0.9f, 0.95f); 
@@ -190,7 +191,7 @@ void draw_hand_mesh(const SkinnedMesh& mesh, const std::vector<Landmark>& points
                 glColor3f(1.0f, 0.9f, 0.85f); 
             }
 
-            // -- Logic: Stretch & Rotate --
+            // Logic: Stretch & Rotate
             Vec3 dir = {v.rvx, v.rvy, v.rvz};
             float stretch = 1.0f;
             
@@ -224,7 +225,7 @@ void draw_hand_mesh(const SkinnedMesh& mesh, const std::vector<Landmark>& points
     }
     glEnd();
 
-    // 3. Render Joint Spheres (Gap Filling)
+    // 3. Render Joint Spheres (Gap Filling on 21 points)
     // Fills visual tearing gaps caused by rigid binding on sharp bends.
     for (size_t i = 0; i < points.size(); i++) {
         glPushMatrix();
@@ -244,7 +245,6 @@ void draw_hand_mesh(const SkinnedMesh& mesh, const std::vector<Landmark>& points
     }
 }
 
-// --- NEW HELPER FUNCTION ---
 /**
  * @brief Reads the calculated timer delay from the Python tracker.
  * Ensures the C++ viewer runs at the original video's FPS.
@@ -302,7 +302,7 @@ void timer(int) {
     if (std::filesystem::exists("assets/done.flag")) std::exit(0);
     
     glutPostRedisplay(); 
-    // --- UPDATED: Use the dynamic delay value ---
+    // Use the dynamic delay value
     glutTimerFunc(timer_delay_ms, timer, 0); 
 }
 
@@ -318,7 +318,7 @@ int main(int argc, char **argv) {
     mesh_left = load_skinned_mesh("assets/mano_left.json");
     if (!mesh_left.vertices.empty()) left_loaded = true;
 
-    // --- NEW: Load the video FPS delay BEFORE starting the timer ---
+    // Load the video FPS delay BEFORE starting the timer
     load_timer_delay(); 
 
     // Initialize GLUT

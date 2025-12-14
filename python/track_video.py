@@ -23,7 +23,7 @@ DONE_FLAG = "assets/done.flag"
 SPEED_FILE = "assets/speed.txt" # <-- NEW FILE
 
 # Cleanup flags from previous runs
-for f in [PAUSE_FLAG, DONE_FLAG, SPEED_FILE]: # <-- ADDED SPEED_FILE
+for f in [PAUSE_FLAG, DONE_FLAG, SPEED_FILE]:
     if os.path.exists(f): os.remove(f)
 
 # Initialize MediaPipe Hands
@@ -40,7 +40,7 @@ if not cap.isOpened():
     sys.stderr.write(f"Error: Could not open video file at {VIDEO_PATH}\n")
     exit(1)
 
-# --- DYNAMIC FPS LOGIC (For C++ Synchronization) ---
+# DYNAMIC FPS LOGIC (For C++ Synchronization)
 original_fps = cap.get(cv2.CAP_PROP_FPS)
 
 # Calculate the millisecond delay required to match the video's FPS
@@ -55,7 +55,7 @@ with open(SPEED_FILE, "w") as f:
     f.write(str(timer_ms))
 
 print(f"Tracking system synchronized to video speed: {original_fps:.2f} FPS ({timer_ms}ms delay in C++).")
-# --- END DYNAMIC FPS LOGIC ---
+# END DYNAMIC FPS LOGIC
 
 
 while True:
@@ -70,7 +70,7 @@ while True:
     # Convert BGR (OpenCV) to RGB (MediaPipe)
     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     
-    # --- PERFORMANCE BOTTLENECK: MediaPipe processing happens here ---
+    # BOTTLENECK: MediaPipe processing happens here
     results = hands.process(image)
 
     # UI Rendering (Optional debug view)
@@ -79,7 +79,7 @@ while True:
     if cv2.getWindowProperty("Original Frame", cv2.WND_PROP_VISIBLE) < 1 or key == ord('q'):
         break
 
-    # -- Data Serialization --
+    # Data Serialization
     output_hands = []
     
     if results.multi_hand_landmarks:
@@ -95,15 +95,11 @@ while True:
                 "landmarks": points
             })
 
-    # -- Atomic Write Operation --
+    # Atomic Write Operation
     temp_path = OUTPUT_JSON + ".tmp"
     with open(temp_path, "w") as f:
         json.dump(output_hands, f)
     os.replace(temp_path, OUTPUT_JSON)
-
-    # --- CRITICAL FIX: REMOVED time.sleep(1/30) ---
-    # The loop will now run as fast as the AI processing allows.
-    # The C++ viewer's timer ensures the 3D model catches up at the correct rate.
 
 # Cleanup
 cap.release()
