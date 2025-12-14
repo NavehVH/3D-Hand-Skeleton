@@ -50,7 +50,7 @@ std::map<int, int> bone_map = {
     {17, 18}, {18, 19}, {19, 20}  
 };
 
-// -- Vector Math Utilities --
+// Vector Math Utilities
 struct Vec3 { float x, y, z; };
 
 //Getting Pure Direction
@@ -324,6 +324,12 @@ int main(int argc, char **argv) {
     // Initialize GLUT
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+    
+    // Set fixed position for the C++ viewer window
+    int WINDOW_X_CPP = 900;
+    int WINDOW_Y_CPP = 50;
+    glutInitWindowPosition(WINDOW_X_CPP, WINDOW_Y_CPP);
+
     glutInitWindowSize(800, 600);
     glutCreateWindow("3D Hand Skeleton Viewer");
     

@@ -13,14 +13,14 @@ import cv2
 import json
 import time
 import os
-import sys # <-- NEW IMPORT
+import sys 
 
 # Configuration
 VIDEO_PATH = "assets/hand_video.mp4"
 OUTPUT_JSON = "assets/current.json"
 PAUSE_FLAG = "assets/pause.flag"
 DONE_FLAG = "assets/done.flag"
-SPEED_FILE = "assets/speed.txt" # <-- NEW FILE
+SPEED_FILE = "assets/speed.txt" 
 
 # Cleanup flags from previous runs
 for f in [PAUSE_FLAG, DONE_FLAG, SPEED_FILE]:
@@ -40,14 +40,21 @@ if not cap.isOpened():
     sys.stderr.write(f"Error: Could not open video file at {VIDEO_PATH}\n")
     exit(1)
 
+# --- ADDITION: Set fixed position for the OpenCV window ---
+WINDOW_NAME_PYTHON = "Original Frame"
+WINDOW_X_PYTHON = 50
+WINDOW_Y_PYTHON = 50
+cv2.namedWindow(WINDOW_NAME_PYTHON, cv2.WINDOW_AUTOSIZE)
+cv2.moveWindow(WINDOW_NAME_PYTHON, WINDOW_X_PYTHON, WINDOW_Y_PYTHON)
+# ---------------------------------------------------
+
 # DYNAMIC FPS LOGIC (For C++ Synchronization)
 original_fps = cap.get(cv2.CAP_PROP_FPS)
 
 # Calculate the millisecond delay required to match the video's FPS
-if original_fps > 1.0: # Check if FPS is a reasonable value
+if original_fps > 1.0: 
     timer_ms = int((1.0 / original_fps) * 1000)
 else:
-    # Default to 33ms (30 FPS) if the rate cannot be read
     timer_ms = 33
 
 # Write the calculated delay to the IPC file for the C++ viewer
@@ -74,9 +81,9 @@ while True:
     results = hands.process(image)
 
     # UI Rendering (Optional debug view)
-    cv2.imshow("Original Frame", frame)
+    cv2.imshow(WINDOW_NAME_PYTHON, frame) # Use the defined name
     key = cv2.waitKey(1) & 0xFF 
-    if cv2.getWindowProperty("Original Frame", cv2.WND_PROP_VISIBLE) < 1 or key == ord('q'):
+    if cv2.getWindowProperty(WINDOW_NAME_PYTHON, cv2.WND_PROP_VISIBLE) < 1 or key == ord('q'):
         break
 
     # Data Serialization

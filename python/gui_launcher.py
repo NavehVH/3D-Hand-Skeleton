@@ -95,7 +95,7 @@ def toggle_pause():
         os.remove(PAUSE_FLAG)
         pause_button.config(text="Pause", bg="gray")
 
-# -- GUI Initialization --
+# GUI Initialization
 root = tk.Tk()
 root.title("3D Hand Launcher")
 root.geometry("400x300")
